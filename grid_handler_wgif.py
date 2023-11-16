@@ -1,14 +1,24 @@
 import pygame
 import sys
-import imageio
 import moviepy.editor as mp
 from pygame.locals import QUIT
 from win32 import win32gui
 import win32.lib.win32con as win32con
-import pygetwindow as gw
+
+from config import GRID_SIZE
+from config import SCREEN_SIZE_OVERRIDE
+from config import SCREEN_WIDTH
+from config import SCREEN_HEIGHT
 
 # Initialize Pygame
 pygame.init()
+
+if SCREEN_SIZE_OVERRIDE==False:
+    width, height = pygame.display.Info().current_w, pygame.display.Info().current_h # hopefully 16:9
+else:
+    width, height = SCREEN_WIDTH, SCREEN_HEIGHT
+#print(width, height) # 2048 1152
+grid_size=GRID_SIZE
 
 # Function to load and scale an image (supports PNG and GIF)
 def load_and_scale_image(image_path, scale):
@@ -35,16 +45,17 @@ def display_images(screen, image_list, current_frame):
 # Main function
 def main():
     # Set up the screen with per-pixel alpha
-    screen = pygame.display.set_mode((800, 600), pygame.NOFRAME | pygame.SRCALPHA)
-    pygame.display.set_caption("Image Grid")
+    screen = pygame.display.set_mode((width, height), pygame.NOFRAME | pygame.SRCALPHA)
+    
+    #pygame.display.set_caption("Image Grid")
 
     # Load and scale images using smoothscale
-    image1, gif_duration1 = load_and_scale_image("animated1.gif", 0.1)
+    image1, gif_duration1 = load_and_scale_image("animated1.gif", 0.2)
     image2, gif_duration2 = load_and_scale_image("image2.jpg", 0.1)
 
     # Initial image coordinates
-    image1_coordinates = (100, 100)
-    image2_coordinates = (300, 300)
+    image1_coordinates = (1024, 576)
+    image2_coordinates = (0, 0)
 
     # Create a list of image-coordinate pairs
     image_list = [(image1, image1_coordinates), (image2, image2_coordinates)]
