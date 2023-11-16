@@ -1,0 +1,2 @@
+# GridHandler
+This tool shall take images and put them inconvienently at some specified position on the screen, thus covering the respective area and not disappear until the program is stopped. It is glorious.
