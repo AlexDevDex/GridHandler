@@ -47,12 +47,26 @@ def display_images(screen, image_list, current_frame):
         else:
             screen.blit(image, coordinates)
 
-# Main function
+# Function to check for quit key combination
+def check_quit_keys(): # ctrl+alt+c
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_c] and keys[pygame.K_LALT] and keys[pygame.K_LCTRL]:
+        pygame.quit()
+        sys.exit()
+
+# Function to toggle image show
+def toggle_image_show(keys, show_images): # ctrl+alt+i
+    if keys[pygame.K_i] and keys[pygame.K_LALT] and keys[pygame.K_LCTRL]:
+        return not show_images
+    return show_images
+
+# Main function ++++++++++++++++++++++++++++++++++++++++++++++++++++
 def main():
     # Set up the screen with per-pixel alpha
     screen = pygame.display.set_mode((width, height), pygame.NOFRAME | pygame.SRCALPHA)
     
-    #pygame.display.set_caption("Image Grid")
+    # Boolean variable to control image display
+    show_images = True
 
     # Load and scale images using smoothscale
     image1, gif_duration1 = load_and_scale_image("animated1.gif", grid_image_width, grid_image_height)
@@ -75,16 +89,22 @@ def main():
     win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE,
                            win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_TRANSPARENT)
 
-    # Game loop
     clock = pygame.time.Clock()
     current_frame = 0
     elapsed_time = 0.0
 
+    # --------------------- Game loop ------------------------
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit()
+
+        check_quit_keys()
+
+        # Check for toggle image show key combination
+        keys = pygame.key.get_pressed()
+        show_images = toggle_image_show(keys, show_images)
 
         # Clear the screen with a transparent color
         screen.fill((0, 0, 0, 0))
@@ -92,8 +112,9 @@ def main():
         # STAY ON TOP
         win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
-        # Display images
-        display_images(screen, image_list, current_frame)
+        # Display images if the flag is True
+        if show_images:
+            display_images(screen, image_list, current_frame)
 
         # Update the display
         pygame.display.flip()
