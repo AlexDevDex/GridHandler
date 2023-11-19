@@ -13,26 +13,31 @@ from config import SCREEN_HEIGHT
 # Initialize Pygame
 pygame.init()
 
+# optional config override
 if SCREEN_SIZE_OVERRIDE==False:
     width, height = pygame.display.Info().current_w, pygame.display.Info().current_h # hopefully 16:9
 else:
     width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 #print(width, height) # 2048 1152
-grid_size=GRID_SIZE
+
+grid_image_width, grid_image_height = width/GRID_SIZE, height/GRID_SIZE # the size of grid fields
+
 
 # Function to load and scale an image (supports PNG and GIF)
-def load_and_scale_image(image_path, scale):
+def load_and_scale_image(image_path, desired_width, desired_height):
     if image_path.lower().endswith('.gif'):
         clip = mp.VideoFileClip(image_path, audio=False)
-        gif_frames = [pygame.transform.smoothscale(pygame.image.fromstring(frame.tostring(), (frame.shape[1], frame.shape[0]), "RGB"), (int(frame.shape[1] * scale), int(frame.shape[0] * scale))) for i, frame in enumerate(clip.iter_frames(fps=clip.fps))]
+        gif_frames = [
+            pygame.transform.smoothscale(pygame.image.fromstring(frame.tostring(), (frame.shape[1], frame.shape[0]), "RGB"),
+                                          (desired_width, desired_height)) for
+            i, frame in enumerate(clip.iter_frames(fps=clip.fps))]
         gif_duration = clip.duration
         return gif_frames, gif_duration
     else:
         image = pygame.image.load(image_path).convert_alpha()
-        original_size = image.get_size()
-        new_size = (int(original_size[0] * scale), int(original_size[1] * scale))
-        scaled_image = pygame.transform.smoothscale(image, new_size)
+        scaled_image = pygame.transform.smoothscale(image, (desired_width, desired_height))
         return scaled_image, 0  # Return 0 duration for non-GIF images
+
 
 # Function to display images at specified coordinates
 def display_images(screen, image_list, current_frame):
@@ -50,15 +55,17 @@ def main():
     #pygame.display.set_caption("Image Grid")
 
     # Load and scale images using smoothscale
-    image1, gif_duration1 = load_and_scale_image("animated1.gif", 0.2)
-    image2, gif_duration2 = load_and_scale_image("image2.jpg", 0.1)
+    image1, gif_duration1 = load_and_scale_image("animated1.gif", grid_image_width, grid_image_height)
+    image2, gif_duration2 = load_and_scale_image("image2.jpg", grid_image_width, grid_image_height)
+    image3, gif_duration3 = load_and_scale_image("image1.jpg", grid_image_width, grid_image_height)
 
     # Initial image coordinates
-    image1_coordinates = (1024, 576)
-    image2_coordinates = (0, 0)
+    image1_coordinates = (0, 0)
+    image2_coordinates = (1024, 576)
+    image3_coordinates = (0, 576)
 
     # Create a list of image-coordinate pairs
-    image_list = [(image1, image1_coordinates), (image2, image2_coordinates)]
+    image_list = [(image1, image1_coordinates), (image2, image2_coordinates),(image3, image3_coordinates)]
 
     # Set up the window to be transparent and click-through
     hwnd = pygame.display.get_wm_info()["window"]
@@ -82,7 +89,7 @@ def main():
         # Clear the screen with a transparent color
         screen.fill((0, 0, 0, 0))
 
-        # WE STAY ON TOP
+        # STAY ON TOP
         win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
         # Display images
@@ -93,7 +100,7 @@ def main():
 
         # Control GIF animation frame rate
         elapsed_time += clock.tick(30) / 1000.0
-        if elapsed_time >= min(gif_duration1, gif_duration2):
+        if elapsed_time >= min(gif_duration1, gif_duration2, gif_duration3):
             elapsed_time = 0.0
             current_frame = (current_frame + 1) % len(image1)
 
