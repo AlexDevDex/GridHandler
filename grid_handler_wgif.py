@@ -1,6 +1,7 @@
 import pygame
 import sys
 import os
+import re
 import moviepy.editor as mp
 from pygame.locals import QUIT
 from win32 import win32gui
@@ -24,15 +25,23 @@ else:
 grid_image_width, grid_image_height = int(width/GRID_SIZE), int(height/GRID_SIZE) # the size of grid fields
 
 # Create a 2D array to hold images in each grid field
-grid_array = [[None for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+#grid_array = [[None for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+grid_images = [[None] * GRID_SIZE for _ in range(GRID_SIZE)]
+filename_pattern = re.compile(r'(\d+)-(\d+)\.(jpg|gif|png)')
 
 def load_images_from_folder(image_folder_path):
     for filename in os.listdir(image_folder_path):
         file_path = os.path.join(image_folder_path, filename)
     
-    # Check if the current item is a file and has a specific extension
-    if os.path.isfile(file_path) and (filename.lower().endswith(".jpg") or filename.lower().endswith(".png") or filename.lower().endswith(".png")):
-        print("File:", filename)
+        # Check if the filename matches the pattern
+    match = filename_pattern.match(filename)
+    if match:
+        # Extract the numbers from the filename
+        row_number, col_number = map(int, match.groups()[:2])
+
+        # Update the grid_images array with the file_path
+        grid_images[row_number][col_number] = file_path
+        print(grid_images)
 
 
 # Function to load and scale an image (supports PNG and GIF)
