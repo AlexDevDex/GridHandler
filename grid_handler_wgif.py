@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 import moviepy.editor as mp
 from pygame.locals import QUIT
 from win32 import win32gui
@@ -20,7 +21,18 @@ else:
     width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 #print(width, height) # 2048 1152
 
-grid_image_width, grid_image_height = width/GRID_SIZE, height/GRID_SIZE # the size of grid fields
+grid_image_width, grid_image_height = int(width/GRID_SIZE), int(height/GRID_SIZE) # the size of grid fields
+
+# Create a 2D array to hold images in each grid field
+grid_array = [[None for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
+
+def load_images_from_folder(image_folder_path):
+    for filename in os.listdir(image_folder_path):
+        file_path = os.path.join(image_folder_path, filename)
+    
+    # Check if the current item is a file and has a specific extension
+    if os.path.isfile(file_path) and (filename.lower().endswith(".jpg") or filename.lower().endswith(".png") or filename.lower().endswith(".png")):
+        print("File:", filename)
 
 
 # Function to load and scale an image (supports PNG and GIF)
@@ -47,6 +59,12 @@ def display_images(screen, image_list, current_frame):
         else:
             screen.blit(image, coordinates)
 
+def draw_grid(screen, width, height, field_width, field_height):
+    for x in range(0, width, field_width):
+        pygame.draw.line(screen, (255, 255, 255), (x, 0), (x, height), 1)
+    for y in range(0, height, field_height):
+        pygame.draw.line(screen, (255, 255, 255), (0, y), (width, y), 1)
+
 # Function to check for quit key combination
 def check_quit_keys(): # ctrl+alt+c
     keys = pygame.key.get_pressed()
@@ -55,18 +73,26 @@ def check_quit_keys(): # ctrl+alt+c
         sys.exit()
 
 # Function to toggle image show
-def toggle_image_show(keys, show_images): # ctrl+alt+i
+def toggle_images(keys, show_images): # ctrl+alt+i
     if keys[pygame.K_i] and keys[pygame.K_LALT] and keys[pygame.K_LCTRL]:
         return not show_images
     return show_images
+
+# Function to toggle image show
+def toggle_grid(keys, show_grid): # ctrl+alt+i
+    if keys[pygame.K_o] and keys[pygame.K_LALT] and keys[pygame.K_LCTRL]:
+        return not show_grid
+    return show_grid
 
 # Main function ++++++++++++++++++++++++++++++++++++++++++++++++++++
 def main():
     # Set up the screen with per-pixel alpha
     screen = pygame.display.set_mode((width, height), pygame.NOFRAME | pygame.SRCALPHA)
+    load_images_from_folder("grid_images")
     
     # Boolean variable to control image display
     show_images = True
+    show_grid = False
 
     # Load and scale images using smoothscale
     image1, gif_duration1 = load_and_scale_image("animated1.gif", grid_image_width, grid_image_height)
@@ -102,9 +128,10 @@ def main():
 
         check_quit_keys()
 
-        # Check for toggle image show key combination
+        # Check for toggle image/grid display key combination update
         keys = pygame.key.get_pressed()
-        show_images = toggle_image_show(keys, show_images)
+        show_images = toggle_images(keys, show_images)
+        show_grid = toggle_grid(keys, show_grid)
 
         # Clear the screen with a transparent color
         screen.fill((0, 0, 0, 0))
@@ -115,6 +142,8 @@ def main():
         # Display images if the flag is True
         if show_images:
             display_images(screen, image_list, current_frame)
+        if show_grid:
+            draw_grid(screen, width, height, grid_image_width, grid_image_height)
 
         # Update the display
         pygame.display.flip()
