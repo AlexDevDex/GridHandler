@@ -1,10 +1,6 @@
 .env
 env.py
-image1.png
-image2.png
-image1.jpg
-image2.jpg
-animated1.gif
+
 twitch_grid_bot.py
 test.py
 cat.py

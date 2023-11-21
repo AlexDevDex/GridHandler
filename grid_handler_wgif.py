@@ -36,7 +36,7 @@ def load_images_from_folder(image_folder_path):
         # Check if the filename matches the pattern
     match = filename_pattern.match(filename)
     if match:
-        # Extract the numbers from the filename
+        # Extract the numbers from the filename (the 2 first matching groups in the given pattern)
         row_number, col_number = map(int, match.groups()[:2])
 
         # Update the grid_images array with the file_path
@@ -44,7 +44,7 @@ def load_images_from_folder(image_folder_path):
         print(grid_images)
 
 
-# Function to load and scale an image (supports PNG and GIF)
+# Function to load and scale an image (tested support for PNG, JPG and GIF)
 def load_and_scale_image(image_path, desired_width, desired_height):
     if image_path.lower().endswith('.gif'):
         clip = mp.VideoFileClip(image_path, audio=False)
@@ -87,7 +87,7 @@ def toggle_images(keys, show_images): # ctrl+alt+i
         return not show_images
     return show_images
 
-# Function to toggle image show
+# Function to toggle grid show
 def toggle_grid(keys, show_grid): # ctrl+alt+i
     if keys[pygame.K_o] and keys[pygame.K_LALT] and keys[pygame.K_LCTRL]:
         return not show_grid
@@ -105,8 +105,8 @@ def main():
 
     # Load and scale images using smoothscale
     image1, gif_duration1 = load_and_scale_image("animated1.gif", grid_image_width, grid_image_height)
-    image2, gif_duration2 = load_and_scale_image("image2.jpg", grid_image_width, grid_image_height)
-    image3, gif_duration3 = load_and_scale_image("image1.jpg", grid_image_width, grid_image_height)
+    image2, gif_duration2 = load_and_scale_image("image2.png", grid_image_width, grid_image_height)
+    image3, gif_duration3 = load_and_scale_image("image1.png", grid_image_width, grid_image_height)
 
     # Initial image coordinates
     image1_coordinates = (0, 0)
@@ -145,7 +145,7 @@ def main():
         # Clear the screen with a transparent color
         screen.fill((0, 0, 0, 0))
 
-        # STAY ON TOP
+        # STAY ON TOP, the essential function
         win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
         # Display images if the flag is True
