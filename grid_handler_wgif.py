@@ -22,9 +22,11 @@ else:
     width, height = SCREEN_WIDTH, SCREEN_HEIGHT
 #print(width, height) # 2048 1152
 
+
+# ********************* Under construction
 grid_image_width, grid_image_height = int(width/GRID_SIZE), int(height/GRID_SIZE) # the size of grid fields
 
-# Create a 2D array to hold images in each grid field
+# Create a 2D array to hold the image for each grid field
 #grid_array = [[None for _ in range(GRID_SIZE)] for _ in range(GRID_SIZE)]
 grid_images = [[None] * GRID_SIZE for _ in range(GRID_SIZE)]
 filename_pattern = re.compile(r'(\d+)-(\d+)\.(jpg|gif|png)')
@@ -42,6 +44,7 @@ def load_images_from_folder(image_folder_path):
         # Update the grid_images array with the file_path
         grid_images[row_number][col_number] = file_path
         print(grid_images)
+# ********************* Under construction
 
 
 # Function to load and scale an image (tested support for PNG, JPG and GIF)
@@ -69,7 +72,7 @@ def display_images(screen, image_list, current_frame):
             screen.blit(image, coordinates)
 
 def draw_grid(screen, width, height, field_width, field_height):
-    for x in range(0, width, field_width):
+    for x in range(0, width, field_width+1):
         pygame.draw.line(screen, (255, 255, 255), (x, 0), (x, height), 1)
     for y in range(0, height, field_height):
         pygame.draw.line(screen, (255, 255, 255), (0, y), (width, y), 1)
@@ -140,7 +143,7 @@ def main():
         # Check for toggle image/grid display key combination update
         keys = pygame.key.get_pressed()
         show_images = toggle_images(keys, show_images)
-        show_grid = toggle_grid(keys, show_grid)
+        show_grid = toggle_grid(keys, show_grid) # TODO: toggles toggle every tick if keys are pressed, can do better
 
         # Clear the screen with a transparent color
         screen.fill((0, 0, 0, 0))
@@ -159,7 +162,7 @@ def main():
 
         # Control GIF animation frame rate
         elapsed_time += clock.tick(30) / 1000.0
-        if elapsed_time >= min(gif_duration1, gif_duration2, gif_duration3):
+        if elapsed_time >= min(gif_duration1, gif_duration2, gif_duration3): # TODO: every gif should run as long as it needs, not min() over all gifs
             elapsed_time = 0.0
             current_frame = (current_frame + 1) % len(image1)
 
