@@ -148,7 +148,7 @@ def main():
         # Clear the screen with a transparent color
         screen.fill((0, 0, 0, 0))
 
-        # STAY ON TOP, the essential function
+        ########################## STAY ON TOP, the essential functionality
         win32gui.SetWindowPos(hwnd, win32con.HWND_TOPMOST, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE)
 
         # Display images if the flag is True

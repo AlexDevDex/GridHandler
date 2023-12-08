@@ -1,6 +1,7 @@
 .env
 env.py
-
+event_bot.py
 twitch_grid_bot.py
 test.py
 cat.py
+#gridhandler_tkinter.py
