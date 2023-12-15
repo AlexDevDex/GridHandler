@@ -4,4 +4,5 @@ event_bot.py
 twitch_grid_bot.py
 test.py
 cat.py
-#gridhandler_tkinter.py
+gridhandler_tkinter.py
+tkinter test.py
