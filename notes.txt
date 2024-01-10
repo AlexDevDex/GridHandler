@@ -1,0 +1,26 @@
+for key, value in cells.items():
+    # Create a cell button
+    button = ttk.Button(
+        lf,
+        text=key,
+        compound=tk.RIGHT,
+        command=lambda k=key: on_cell_click(k)  # Pass the key to the function
+    )
+    button.grid(**value, ipadx=80, ipady=45, sticky=tk.NSEW)
+    buttons[key] = button  # Store a reference to the button
+    r = ttk.Radiobutton(
+        lf,
+        text=key
+    )
+    r.grid(**value, padx=5, pady=5)
+
+
+
+@staticmethod
+def make_click_through(window):
+    try:
+        hwnd = int(window.wm_frame(), 16)
+        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT)
+        win32gui.SetLayeredWindowAttributes(hwnd, 0, 255, win32con.LWA_COLORKEY)
+    except Exception as e:
+        print(f"Failed to make the window click-through: {e}")

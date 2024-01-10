@@ -1,58 +1,100 @@
 import tkinter as tk
-from tkinter import ttk
 from tkinter import filedialog
 from PIL import Image, ImageTk
-import win32gui
-import win32.lib.win32con as win32con
-try:
-    from ctypes import windll
-    windll.shcore.SetProcessDpiAwareness(1)
-except:
-    pass
 
+class ImageGrid:
+    def __init__(self, master, rows, cols):
+        self.master = master
+        self.rows = rows
+        self.cols = cols
+        self.images = [[None for _ in range(cols)] for _ in range(rows)]
+        self.selected_cells = set()
+
+        # Create the grid of selectable cells
+        for row in range(rows):
+            for col in range(cols):
+                cell = tk.Canvas(master, width=50, height=50, highlightthickness=1, highlightbackground="black")
+                cell.grid(row=row, column=col)
+                cell.bind("<Button-1>", lambda event, row=row, col=col: self.toggle_cell_selection(row, col))
+                self.images[row][col] = cell
+                print(f"Created cell at ({row}, {col}): {cell}")
+
+        # Create the buttons on the left side
+        self.set_image_button = tk.Button(master, text="Set Image", command=self.set_image)
+        self.set_image_button.grid(row=0, column=cols+1)
+
+        self.delete_image_button = tk.Button(master, text="Delete Image", command=self.delete_image)
+        self.delete_image_button.grid(row=1, column=cols+1)
+
+        self.load_grid_button = tk.Button(master, text="Load Grid", command=self.load_grid)
+        self.load_grid_button.grid(row=2, column=cols+1)
+
+        self.link_entry = tk.Entry(master)
+        self.link_entry.grid(row=3, column=cols+1)
+
+    def toggle_cell_selection(self, row, col):
+        if (row, col) in self.selected_cells:
+            self.selected_cells.remove((row, col))
+            self.images[row][col].config(highlightbackground="black")
+        else:
+            self.selected_cells.add((row, col))
+            self.images[row][col].config(highlightbackground="red")
+
+    def select_cell(self, row, col):
+        if (row, col) in self.selected_cells:
+            self.selected_cells.remove((row, col))
+            self.images[row][col].delete("all")
+        else:
+            self.selected_cells.add((row, col))
+
+    def set_image(self):
+        file_path = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg;*.jpeg;*.png")])
+        if file_path:
+            img = Image.open(file_path)
+            photo = ImageTk.PhotoImage(img)
+            self.master.photo = photo
+            self.master.img = img
+            self.master.filename = file_path
+
+            if self.link_entry.get().startswith("https://i.imgur.com/") and len(self.selected_cells) > 0:
+                x1, y1, x2, y2 = self.get_selected_cells_bbox()
+                img = img.crop((x1, y1, x2, y2))
+                img.thumbnail((50, 50))
+                photo = ImageTk.PhotoImage(img)
+
+                for row, col in self.selected_cells:
+                    if self.images[row][col]:
+                        self.images[row][col].delete("all")
+                    self.images[row][col] = tk.Canvas(self.master, width=50, height=50, highlightthickness=1, highlightbackground="black")
+                    self.images[row][col].create_image(0, 0, anchor="nw", image=photo)
+                    self.images[row][col].grid(row=row, column=col)
+
+    def delete_image(self):
+        for row, col in self.selected_cells:
+            if self.images[row][col]:
+                self.images[row][col].delete("all")
+                self.images[row][col] = None
+        self.selected_cells.clear()
+
+    def load_grid(self):
+        if self.master.filename:
+            img = Image.open(self.master.filename)
+            for row in range(self.rows):
+                for col in range(self.cols):
+                    if self.images[row][col]:
+                        x1, y1, x2, y2 = self.get_selected_cells_bbox()
+                        img_crop = img.crop((x1, y1, x2, y2))
+                        img_crop.thumbnail((50, 50))
+                        photo = ImageTk.PhotoImage(img_crop)
+                        self.images[row][col].create_image(0, 0, anchor="nw", image=photo)
+
+    def get_selected_cells_bbox(self):
+        rows, cols = zip(*self.selected_cells)
+        x1, y1 = min(cols), min(rows)
+        x2, y2 = max(cols)+1, max(rows)+1
+        return x1*50, y1*50, x2*50, y2*50
 
 root = tk.Tk()
-root.title('Grid App')
-
-window_width = 300
-window_height = 200
-
-#root.attributes('-alpha', 0.0) # makes invisible
-root.attributes('-topmost', 1) #always on top
-#window.lift()
-#window.lift(another_window)
-
-#window.lower()
-#window.lower(another_window)
-
-# get the user's screen dimension
-screen_width = root.winfo_screenwidth()
-screen_height = root.winfo_screenheight()
-
-grid_size=8
-
-
-# configure the grid
-root.columnconfigure(0, weight=1)
-root.columnconfigure(1, weight=3)
-
-
-def cell_clicked():
-    file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.gif;*.bmp")])
-    btn_image = tk.PhotoImage(file="image1.png")
-
-@staticmethod
-def make_click_through(window):
-    try:
-        hwnd = int(window.wm_frame(), 16)
-        win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE) | win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT)
-        win32gui.SetLayeredWindowAttributes(hwnd, 0, 255, win32con.LWA_COLORKEY)
-    except Exception as e:
-        print(f"Failed to make the window click-through: {e}")
-
-# find the center point
-center_x = int(screen_width/2 - window_width / 2)
-center_y = int(screen_height/2 - window_height / 2)
-
-
+root.title("Image Grid")
+app = ImageGrid(root, 4, 4)
 root.mainloop()

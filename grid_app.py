@@ -14,41 +14,59 @@ except:
 root = tk.Tk()
 root.title('Grid App')
 
-def on_cell_click(button_key):
+def load_image_to_cell():
+    print("test")
     file_path = filedialog.askopenfilename(title="Select an image file", filetypes=[("Image files", "*.png;*.jpg;*.jpeg")])
 
     if file_path:
         # Resize the image to a given size
-        target_size = (50, 50)  # Adjust the size as needed
+        target_size = (80, 45)  # Adjust the size as needed
         image = Image.open(file_path)
         image = image.resize(target_size)
 
         # Create a PhotoImage object from the resized image
         image = ImageTk.PhotoImage(image)
-
+        
         # Update the button's image
-        buttons[button_key].config(image=image)
-        buttons[button_key].image = image  # Keep a reference to avoid garbage collection
+        #buttons[button_key].config(image=image)
+        #buttons[button_key].image = image  # Keep a reference to avoid garbage collection
 
-username_label = ttk.Label(root, text="Username:")
-username_label.grid(column=0, row=1, sticky=tk.W, padx=5, pady=5)
+
+def on_cell_selected(button_key, variable):
+    if variable.get() == 1:
+        selected_cells_set.add(button_key)
+    else:
+            selected_cells_set.discard(button_key)
+    if len(selected_cells_set)>0:
+        set_image_button.config(state=tk.NORMAL)
+    else:
+        set_image_button.config(state=tk.DISABLED)
+
+    print(selected_cells_set)
+
+
+set_image_button = tk.Button(root, text="Set Image",compound=tk.BOTTOM, command=lambda: load_image_to_cell)
+set_image_button.grid(row=0, column=1)
+set_image_button.config(state=tk.DISABLED)
+link_entry = tk.Entry(root)
+link_entry.grid(row=0, column=0)
 # password
 password_label = ttk.Label(root, text="Password:")
-password_label.grid(column=0, row=0, sticky=tk.W, padx=5, pady=5)
+password_label.grid(column=0, row=2, sticky=tk.W, padx=5, pady=5)
 
 # label frame
 lf = ttk.LabelFrame(root, text='Grid Preview')
-lf.grid(column=1, row=0, padx=0, pady=0, sticky=tk.NSEW)
+lf.grid(column=2, row=0, padx=0, pady=0, sticky=tk.NSEW)
 
 # get the user's screen dimension
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
-grid_width = 2
+grid_width = 4
 grid_height = 4
 cells = {}
-
-buttons = {}  # Store references to the buttons
+selected_cells_set = set({})
+buttons = {}
 
 for row in range(grid_height):
     for column in range(grid_width):
@@ -56,15 +74,18 @@ for row in range(grid_height):
         cells[key] = {'row': row, 'column': column}
 
 for key, value in cells.items():
-    # Create a cell button
-    button = ttk.Button(
+    checkbox_variable = tk.IntVar()
+    select = ttk.Checkbutton(
         lf,
         text=key,
-        width=50,
-        command=lambda k=key: on_cell_click(k)  # Pass the key to the function
+        variable=checkbox_variable,
+        onvalue=1,
+        offvalue=0,
+        compound=tk.RIGHT,
+        command=lambda k=key, var=checkbox_variable: on_cell_selected(k, var)
     )
-    button.grid(**value, padx=50, pady=50, sticky=tk.NSEW)
-    buttons[key] = button  # Store a reference to the button
+    select.grid(**value, ipadx=80, ipady=45, sticky=tk.NSEW)
+    buttons[key] = select
 
 # show the root window
 root.mainloop()
